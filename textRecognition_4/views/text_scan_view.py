@@ -66,6 +66,16 @@ class TextScanView:
             return
 
         file_path = e.files[0].path
+        folder_path = os.path.dirname(file_path)
+        self.process_images_in_folder(folder_path)
+
+    def process_images_in_folder(self, folder_path):
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
+            if os.path.isfile(file_path) and file_name.lower().endswith(('png', 'jpg', 'jpeg', 'bmp', 'gif')):
+                self.process_and_save_image(file_path)
+
+    def process_and_save_image(self, file_path):
         file_name = os.path.basename(file_path)
 
         # сохранение файла в истории анализа пользователя

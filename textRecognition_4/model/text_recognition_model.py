@@ -3,7 +3,7 @@ import numpy as np
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, LSTM, Bidirectional, Reshape, Dropout
 from tensorflow.keras.applications import VGG16
-
+import os
 
 class TextRecognitionModel:
     def __init__(self):
@@ -58,6 +58,16 @@ class TextRecognitionModel:
         # предсказание
         preds = self.model.predict(image)
         return self.decode_batch_predictions(preds)[0]
+
+    def predict_folder(self, folder_path):
+        # Предсказание текста для всех изображений в папке
+        predictions = {}
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
+            if os.path.isfile(file_path) and file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+                predicted_text = self.predict(file_path)
+                predictions[file_name] = predicted_text
+        return predictions
 
     # загрузка изображения - предобработка
     def load_image(self, path):
