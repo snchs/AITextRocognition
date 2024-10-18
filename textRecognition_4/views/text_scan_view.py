@@ -1,13 +1,19 @@
 import flet as ft
 import os
-from model.text_recognition_model import TextRecognitionModel
-from utils.utils import create_button, create_card
+from textRecognition_4.model.text_recognition_model import HandwrittenTextRecognizer
+from textRecognition_4.utils.utils import create_button, create_card
+from Segment_Script import extract_words, extract_lines
+
 
 class TextScanView:
     def __init__(self, app):
         self.app = app
+        model_path = 'model/best_model.pth'
+
         # создание объекта класса модели
-        self.model = TextRecognitionModel()
+        self.recognizer = HandwrittenTextRecognizer(model_path)
+
+
 
     def show(self, e=None):
         if not self.app.current_user:
@@ -27,6 +33,12 @@ class TextScanView:
         image_input.file_type_filter = "image/*"
         self.app.page.overlay.append(image_input)
 
+        image_to_seg = ft.FilePicker(on_result=self.segmantate_image)
+        image_to_seg.file_type_filter = "image/*"
+        self.app.page.overlay.append(image_to_seg)
+
+        Segmentation_button = create_button("Segmantate", ft.icons.SMART_BUTTON, lambda _: image_to_seg.pick_files())
+
         upload_button = create_button("Upload Image", ft.icons.UPLOAD_FILE, lambda _: image_input.pick_files())
 
         back_button = ft.IconButton(
@@ -43,6 +55,7 @@ class TextScanView:
                 description,
                 ft.Container(height=30),
                 upload_button,
+                Segmentation_button,
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -66,23 +79,30 @@ class TextScanView:
             return
 
         file_path = e.files[0].path
-        folder_path = os.path.dirname(file_path)
-        self.process_images_in_folder(folder_path)
+        self.process_and_save_image(file_path)
 
-    def process_images_in_folder(self, folder_path):
-        for file_name in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, file_name)
-            if os.path.isfile(file_path) and file_name.lower().endswith(('png', 'jpg', 'jpeg', 'bmp', 'gif')):
-                self.process_and_save_image(file_path)
+    def segmantate_image(self, e):
+        if not e.files:
+            return
+        file_path = e.files[0].path
+        images = extract_words(file_path)
+        lines = extract_lines(file_path)
+
+
+        text = []
+        for image in images:
+            text.append(self.recognizer.predict(image))
+        self.show_result(text)
+
 
     def process_and_save_image(self, file_path):
         file_name = os.path.basename(file_path)
 
         # сохранение файла в истории анализа пользователя
         image_id = self.app.db_manager.save_image(self.app.current_user[0], file_name)
-        # предсказание
-        predicted_text = self.model.predict(file_path)
-        # запись результата в базу
+
+        predicted_text = self.recognizer.predict(file_path)
+
         self.app.db_manager.save_analysis_result(image_id, predicted_text)
         # вывод результата
         self.show_result(predicted_text)
