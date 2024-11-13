@@ -1,8 +1,8 @@
 import flet as ft
 import os
-from textRecognition_4.model.text_recognition_model import HandwrittenTextRecognizer
-from textRecognition_4.utils.utils import create_button, create_card
-from Segment_Script import extract_words, extract_lines
+from AITextRocognition.textRecognition_4.model.text_recognition_model import HandwrittenTextRecognizer
+from AITextRocognition.textRecognition_4.utils.utils import create_button, create_card
+from AITextRocognition.Segment_Script import extract_words, extract_lines
 
 
 class TextScanView:

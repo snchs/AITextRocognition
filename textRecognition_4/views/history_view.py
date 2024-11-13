@@ -1,6 +1,5 @@
 import flet as ft
 
-
 class HistoryView:
     def __init__(self, app):
         self.app = app
