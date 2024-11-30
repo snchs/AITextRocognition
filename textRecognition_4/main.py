@@ -4,7 +4,7 @@ from views.login_view import LoginView
 from views.register_view import RegisterView
 from views.text_scan_view import TextScanView
 from views.history_view import HistoryView
-
+from views.drawing_view import DrawingView
 
 
 
@@ -38,8 +38,14 @@ class MedicalApp:
     def show_textscan_view(self, e=None):
         TextScanView(self).show()
 
+    def analyze_canvas(self, e=None):
+        TextScanView(self).process_and_save_image("canvas_image.png")
+
     def show_history_view(self, e=None):
         HistoryView(self).show()
+
+    def show_drawing_view(self, e=None):
+        DrawingView(self).show()
 
     def logout(self, e=None):
         self.current_user = None

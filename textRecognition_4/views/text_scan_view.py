@@ -1,8 +1,12 @@
 import flet as ft
 import os
+
+from torch.ao.nn.quantized import Dropout
+
 from textRecognition_4.model.text_recognition_model import HandwrittenTextRecognizer
 from textRecognition_4.utils.utils import create_button, create_card
-from Segment_Script import extract_words, extract_lines
+from textRecognition_4.Segment_Script import extract_words
+from textRecognition_4.views.drawing_view import DrawingView
 
 
 class TextScanView:
@@ -12,8 +16,6 @@ class TextScanView:
 
         # создание объекта класса модели
         self.recognizer = HandwrittenTextRecognizer(model_path)
-
-
 
     def show(self, e=None):
         if not self.app.current_user:
@@ -41,6 +43,8 @@ class TextScanView:
 
         upload_button = create_button("Upload Image", ft.icons.UPLOAD_FILE, lambda _: image_input.pick_files())
 
+        draw_button = create_button("Draw Image", ft.icons.BRUSH, lambda _: self.draw())
+
         back_button = ft.IconButton(
             icon=ft.icons.ARROW_BACK,
             icon_color=ft.colors.BLUE_200,
@@ -56,6 +60,7 @@ class TextScanView:
                 ft.Container(height=30),
                 upload_button,
                 Segmentation_button,
+                draw_button,
             ],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -74,6 +79,9 @@ class TextScanView:
         self.app.page.add(ft.Container(content=card, alignment=ft.alignment.center, expand=True))
         self.app.page.update()
 
+    def draw(self):
+        self.app.show_drawing_view()
+
     def process_image(self, e):
         if not e.files:
             return
@@ -86,9 +94,6 @@ class TextScanView:
             return
         file_path = e.files[0].path
         images = extract_words(file_path)
-        lines = extract_lines(file_path)
-
-
         text = []
         for image in images:
             text.append(self.recognizer.predict(image))
