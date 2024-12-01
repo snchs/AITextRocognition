@@ -97,6 +97,7 @@ class TextScanView:
         text = []
         for image in images:
             text.append(self.recognizer.predict(image))
+        text = " ".join(text)
         self.show_result(text)
 
 
